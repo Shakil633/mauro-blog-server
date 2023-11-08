@@ -10,7 +10,10 @@ const port = process.env.PORT || 5020;
 //middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "https://blog-4a388.web.app",
+      "https://blog-4a388.firebaseapp.com/",
+    ],
     credentials: true,
   })
 );
@@ -30,7 +33,7 @@ const client = new MongoClient(uri, {
 
 //middlewares
 const logger = (req, res, next) => {
-  // console.log("log info", req.method, req.url);
+  
   next();
 };
 
@@ -123,7 +126,7 @@ async function run() {
       // console.log(result);
       res.send(result);
     });
-    
+
     //update
     app.put("/blogs/:id", async (req, res) => {
       const id = req.params.id;
