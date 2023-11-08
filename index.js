@@ -66,6 +66,18 @@ async function run() {
 
     const userCollectionData = client.db("blogDB").collection("userData");
 
+
+
+    ///////
+    ////
+
+    ////
+    ////
+    ////
+    ////
+    ///
+    //
+
     //auth related api
     app.post("/jwt", logger, async (req, res) => {
       const user = req.body;
