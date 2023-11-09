@@ -11,8 +11,9 @@ const port = process.env.PORT || 5020;
 app.use(
   cors({
     origin: [
+      "http://localhost:5173",
       "https://blog-4a388.web.app",
-      "https://blog-4a388.firebaseapp.com/",
+      "https://blog-4a388.firebaseapp.com",
     ],
     credentials: true,
   })
@@ -33,7 +34,6 @@ const client = new MongoClient(uri, {
 
 //middlewares
 const logger = (req, res, next) => {
-  
   next();
 };
 
@@ -56,7 +56,6 @@ const verifyToken = (req, res, next) => {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
 
     const blogCollection = client.db("blogDB").collection("blog");
 
@@ -66,10 +65,6 @@ async function run() {
 
     const userCollectionData = client.db("blogDB").collection("userData");
 
-
-
-
-    
     ////
     ///
     //
@@ -84,8 +79,8 @@ async function run() {
       res
         .cookie("token", token, {
           httpOnly: true,
-          secure: true,
-          sameSite: "none",
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         })
         .send({ success: true });
     });
@@ -94,7 +89,13 @@ async function run() {
     app.post("/logout", async (req, res) => {
       const user = req.body;
       // console.log("logging Out User", user);
-      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+      res
+        .clearCookie("token", {
+          maxAge: 0,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
     });
 
     //
@@ -175,7 +176,6 @@ async function run() {
       if (req.user.email !== req.params.email) {
         return res.status(403).send({ message: "forbidden access" });
       }
-
       const email = req.params.email;
       const result = await userCollectionData.find({ email: email }).toArray();
       res.send(result);
@@ -200,10 +200,6 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
